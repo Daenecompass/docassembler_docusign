@@ -1,6 +1,7 @@
 class DocassemblerDocusign
   require 'docusign_rest'
-  attr_accessor :email_info, :signer_info, :file_info, :client
+  require 'pathname'
+  attr_accessor :email_info, :signers, :files, :client
 
   def initialize(username: nil, password: nil, integrator_key: nil, account_id: nil, docusign: DocusignRest)
     username       ||= "0debc564-78c5-432e-8c6b-3ea5c792fd6b"
@@ -17,6 +18,15 @@ class DocassemblerDocusign
 
     @client  ||= docusign::Client.new
     @signers ||= []
+    @files   ||= []
+  end
+
+  def self.build_sign_here_tab(anchor_string: nil, x_offset: 0, y_offset: 0)
+    {
+      anchor_string: anchor_string,
+      anchor_x_offset: x_offset.to_s,
+      anchor_y_offset: y_offset.to_s
+    }
   end
 
   def set_email(subject: nil, body: nil)
@@ -29,14 +39,6 @@ class DocassemblerDocusign
     self
   end
 
-  def build_sign_here_tab(anchor_string: nil, x_offset: 0, y_offset: 0)
-    {
-      anchor_string: anchor_string,
-      anchor_x_offset: x_offset.to_s,
-      anchor_y_offset: y_offset.to_s
-    }
-    self
-  end
 
   def add_signer(name: nil, email: nil, role_name: nil, sign_here_tabs: [])
     @signers << [
@@ -51,7 +53,8 @@ class DocassemblerDocusign
     self
   end
 
-  def add_file(path: nil, name: nil)
+  def add_file(path: nil)
+    name = Pathname.new(path).basename
     @files << {path: path, name: name}
     self
   end
@@ -61,7 +64,7 @@ class DocassemblerDocusign
                .merge({files:   @files})
   end
 
-  def sign(email_subject: nil, email_body: nil)
+  def sign
     req = build_config
     require 'pry'; binding.pry
     res = @client.create_envelope_from_document(req)
