@@ -5,11 +5,6 @@ class DocassemblerDocusign
 
   def initialize(username: nil, password: nil, integrator_key: nil,
                  account_id: nil, docusign: DocusignRest)
-    username       ||= '0debc564-78c5-432e-8c6b-3ea5c792fd6b'
-    password       ||= 'Incheo009n'
-    integrator_key ||= 'fe941a1e-b200-4d7b-aac8-b8a1a3f7855d'
-    account_id     ||= '5f539fb6-c0cc-4d88-9bca-6550e8906dc5'
-
     docusign.configure do |config|
       config.username       = username
       config.password       = password
@@ -70,8 +65,7 @@ class DocassemblerDocusign
     res = @client.create_envelope_from_document(req)
 
     parse_error(res) if res.key?('errorCode')
-
-    require 'pry'; binding.pry
+    return res
   end
 
   ## Errors
